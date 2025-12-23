@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import prisma from "./config/database";
 import jwt from "@fastify/jwt";
 import { authRoutes } from "./routes/auth.routes";
+import { pinRoutes } from "./routes/pin.routes";
 
 const app = fastify({
   logger: true,
@@ -25,6 +26,8 @@ app.register(jwt, {
 });
 
 app.register(authRoutes, { prefix: "/auth" });
+app.register(pinRoutes, { prefix: "/pins" });
+
 const start = async () => {
   try {
     const port = Number(process.env.PORT) || 3333;
