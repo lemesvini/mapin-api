@@ -2,7 +2,7 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import prisma from "./config/database";
 import jwt from "@fastify/jwt";
-import { authRoutes } from "./routes/uth.routes";
+import { authRoutes } from "./routes/auth.routes";
 
 const app = fastify({
   logger: true,

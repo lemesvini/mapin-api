@@ -17,6 +17,38 @@ export class AuthController {
     reply: FastifyReply
   ) {
     try {
+      const { email, username, fullName, password } = request.body;
+
+      // Validate required fields
+      if (!email || !username || !fullName || !password) {
+        return reply.status(400).send({
+          error: "All fields are required (email, username, fullName, password)",
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return reply.status(400).send({
+          error: "Invalid email format",
+        });
+      }
+
+      // Validate username (alphanumeric and underscores, 3-20 chars)
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+      if (!usernameRegex.test(username)) {
+        return reply.status(400).send({
+          error: "Username must be 3-20 characters long and contain only letters, numbers, and underscores",
+        });
+      }
+
+      // Validate password length
+      if (password.length < 6) {
+        return reply.status(400).send({
+          error: "Password must be at least 6 characters long",
+        });
+      }
+
       const user = await userService.createUser(request.body);
       const token = request.server.jwt.sign({
         id: user.id,
@@ -31,7 +63,10 @@ export class AuthController {
           error: "Email or username already exists",
         });
       }
-      throw error;
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error",
+      });
     }
   }
 
@@ -41,21 +76,48 @@ export class AuthController {
     }>,
     reply: FastifyReply
   ) {
-    const { email, password } = request.body;
+    try {
+      const { email, password } = request.body;
 
-    const user = await userService.validateUser(email, password);
+      // Validate input
+      if (!email || !password) {
+        return reply.status(400).send({ 
+          error: "Email and password are required" 
+        });
+      }
 
-    if (!user) {
-      return reply.status(401).send({ error: "Invalid credentials" });
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return reply.status(400).send({ 
+          error: "Invalid email format" 
+        });
+      }
+
+      const user = await userService.validateUser(email, password);
+
+      if (!user) {
+        return reply.status(401).send({ 
+          error: "Invalid credentials" 
+        });
+      }
+
+      const token = request.server.jwt.sign({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      });
+
+      return reply.status(200).send({ 
+        user, 
+        token 
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(500).send({ 
+        error: "Internal server error" 
+      });
     }
-
-    const token = request.server.jwt.sign({
-      id: user.id,
-      email: user.email,
-      username: user.username,
-    });
-
-    return { user, token };
   }
 
   async me(request: FastifyRequest, reply: FastifyReply) {

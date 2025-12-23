@@ -3,3 +3,10 @@ node_modules
 dist
 
 /src/generated/prisma
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode
+.idea
