@@ -226,17 +226,19 @@ export class PinService {
     // Filter by location if coordinates provided
     let filteredPins = pins;
     if (lat !== undefined && lng !== undefined && radius !== undefined) {
-      filteredPins = pins.filter((pin: typeof pins[number]) => {
+      filteredPins = pins.filter((pin: (typeof pins)[number]) => {
         const distance = this.calculateDistance(lat, lng, pin.lat, pin.lng);
         return distance <= radius;
       });
     }
 
-    const pinsWithLikeStatus = filteredPins.map((pin: typeof pins[number]) => ({
-      ...pin,
-      isLiked: requestingUserId ? pin.likes.length > 0 : false,
-      likes: undefined,
-    }));
+    const pinsWithLikeStatus = filteredPins.map(
+      (pin: (typeof pins)[number]) => ({
+        ...pin,
+        isLiked: requestingUserId ? pin.likes.length > 0 : false,
+        likes: undefined,
+      })
+    );
 
     const total = await prisma.pin.count({ where });
 
