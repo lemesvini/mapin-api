@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  username          String   @unique
+  fullName          String   @map("full_name")
+  password          String   // Remember to hash this!
+  bio               String?  
+  profilePictureUrl String?  @map("profile_picture_url")
+  instagramUsername String?  @map("instagram_username")
+  isPrivate         Boolean  @default(true) @map("is_private")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  pins            Pin[]
+  comments        Comment[]
+  likes           Like[]
+  events          Event[]
+  
+  // Followers/Following (self-relations)
+  followers       Follow[]  @relation("UserFollowers")
+  following       Follow[]  @relation("UserFollowing")
+  
+  // Follow requests
+  sentRequests    FollowRequest[] @relation("RequestSender")
+  receivedRequests FollowRequest[] @relation("RequestReceiver")
+
+  @@map("users")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model FollowRequest {
+  id         String   @id @default(uuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  sender   User @relation("RequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("RequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId])
+  @@map("follow_requests")
+}
+
+model Pin {
+  id        String     @id @default(uuid())
+  authorId  String     @map("author_id")
+  lat       Float
+  lng       Float
+  content   String     
+  moodScale Int?       @map("mood_scale") // 1-10 scale
+  feeling   String?    // e.g., "happy", "excited", "sad"
+  isPublic  Boolean    @default(false) @map("is_public")
+  eventId   String?    @map("event_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  event    Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  media    Media[]
+  likes    Like[]
+  comments Comment[]
+
+  @@index([authorId])
+  @@index([eventId])
+  @@index([createdAt])
+  @@index([lat, lng])
+  @@map("pins")
+}
+
+model Media {
+  id        String    @id @default(uuid())
+  pinId     String    @map("pin_id")
+  url       String
+  type      MediaType
+  order     Int       @default(0) // To maintain order of media items
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  pin Pin @relation(fields: [pinId], references: [id], onDelete: Cascade)
+
+  @@index([pinId])
+  @@map("media")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  pinId     String   @map("pin_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  pin  Pin  @relation(fields: [pinId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pinId, userId])
+  @@index([pinId])
+  @@index([userId])
+  @@map("likes")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  pinId     String   @map("pin_id")
+  authorId  String   @map("author_id")
+  content   String   
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  pin    Pin  @relation(fields: [pinId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([pinId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  creatorId   String   @map("creator_id")
+  title       String
+  description String?  
+  lat         Float?   // Optional location for the event
+  lng         Float?
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  creator User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  pins    Pin[]
+
+  @@index([creatorId])
+  @@index([startDate, endDate])
+  @@map("events")
+}
+
+// Enums
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
