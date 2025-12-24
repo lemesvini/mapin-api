@@ -4,6 +4,7 @@ import prisma from "./config/database";
 import jwt from "@fastify/jwt";
 import { authRoutes } from "./routes/auth.routes";
 import { pinRoutes } from "./routes/pin.routes";
+import { userRoutes } from "./routes/user.routes";
 
 const app = fastify({
   logger: true,
@@ -27,6 +28,7 @@ app.register(jwt, {
 
 app.register(authRoutes, { prefix: "/auth" });
 app.register(pinRoutes, { prefix: "/pins" });
+app.register(userRoutes, { prefix: "/users" });
 
 const start = async () => {
   try {

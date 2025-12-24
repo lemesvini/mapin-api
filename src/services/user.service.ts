@@ -58,4 +58,59 @@ export class UserService {
       },
     });
   }
+
+  async searchUsers(query: string, limit: number = 20, offset: number = 0) {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: query, mode: "insensitive" } },
+          { fullName: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        bio: true,
+        profilePictureUrl: true,
+        isPrivate: true,
+        createdAt: true,
+      },
+      take: limit,
+      skip: offset,
+      orderBy: [{ username: "asc" }],
+    });
+
+    const total = await prisma.user.count({
+      where: {
+        OR: [
+          { username: { contains: query, mode: "insensitive" } },
+          { fullName: { contains: query, mode: "insensitive" } },
+        ],
+      },
+    });
+
+    return { users, total };
+  }
+
+  async getAllUsers(limit: number = 50, offset: number = 0) {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        bio: true,
+        profilePictureUrl: true,
+        isPrivate: true,
+        createdAt: true,
+      },
+      take: limit,
+      skip: offset,
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    const total = await prisma.user.count();
+
+    return { users, total };
+  }
 }
