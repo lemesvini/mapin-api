@@ -170,9 +170,14 @@ export class PinService {
             : null;
 
           if (!isFollowing) {
+            console.log(
+              `[PinService] Private user ${authorId} - requestingUserId: ${requestingUserId}, isFollowing: ${!!isFollowing}`
+            );
             return { pins: [], total: 0 };
           }
         }
+      } else {
+        console.log(`[PinService] User viewing own pins: ${authorId}`);
       }
     }
 
@@ -241,6 +246,11 @@ export class PinService {
     );
 
     const total = await prisma.pin.count({ where });
+
+    console.log(
+      `[PinService] Query result - found ${pins.length} pins, total: ${total}, where:`,
+      JSON.stringify(where)
+    );
 
     return { pins: pinsWithLikeStatus, total };
   }

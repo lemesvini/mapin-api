@@ -112,6 +112,13 @@ export class PinController {
       const { authorId, lat, lng, radius, isPublic, limit, offset } =
         request.query;
 
+      request.log.info({
+        msg: "getPins request",
+        authorId,
+        requestingUserId: userId,
+        hasAuth: !!request.user,
+      });
+
       const result = await pinService.getPins({
         authorId,
         lat: lat ? parseFloat(lat) : undefined,
@@ -121,6 +128,12 @@ export class PinController {
         limit: limit ? parseInt(limit) : undefined,
         offset: offset ? parseInt(offset) : undefined,
         requestingUserId: userId,
+      });
+
+      request.log.info({
+        msg: "getPins result",
+        pinsCount: result.pins.length,
+        total: result.total,
       });
 
       return reply.status(200).send(result);

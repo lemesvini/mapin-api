@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { PinController } from "../controllers/pin.controller";
-import { authenticate } from "../middlewares/auth";
+import { authenticate, optionalAuthenticate } from "../middlewares/auth";
 
 const pinController = new PinController();
 
@@ -29,7 +29,7 @@ export async function pinRoutes(app: FastifyInstance) {
       limit?: string;
       offset?: string;
     };
-  }>("/", pinController.getPins); // Can be accessed without auth for public pins
+  }>("/", { onRequest: [optionalAuthenticate] }, pinController.getPins); // Can be accessed without auth for public pins, but uses auth if available
   
   app.get<{
     Params: { id: string };
