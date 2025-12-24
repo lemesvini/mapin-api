@@ -113,4 +113,41 @@ export class UserService {
 
     return { users, total };
   }
+
+  async updateProfile(
+    userId: string,
+    data: {
+      bio?: string;
+      profilePictureUrl?: string;
+      fullName?: string;
+      instagramUsername?: string;
+    }
+  ) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.bio !== undefined && { bio: data.bio }),
+        ...(data.profilePictureUrl !== undefined && {
+          profilePictureUrl: data.profilePictureUrl || null,
+        }),
+        ...(data.fullName !== undefined && { fullName: data.fullName }),
+        ...(data.instagramUsername !== undefined && {
+          instagramUsername: data.instagramUsername || null,
+        }),
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        bio: true,
+        profilePictureUrl: true,
+        instagramUsername: true,
+        isPrivate: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
+  }
 }

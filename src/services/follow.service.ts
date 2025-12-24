@@ -479,4 +479,3 @@ export class FollowService {
     };
   }
 }
-

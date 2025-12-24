@@ -140,4 +140,57 @@ export class AuthController {
 
     return { user };
   }
+
+  async updateProfile(
+    request: FastifyRequest<{
+      Body: {
+        bio?: string;
+        profilePictureUrl?: string;
+        fullName?: string;
+        instagramUsername?: string;
+      };
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const userId = request.user.id;
+      const { bio, profilePictureUrl, fullName, instagramUsername } =
+        request.body;
+
+      // Validate bio length if provided
+      if (bio !== undefined && bio.length > 500) {
+        return reply.status(400).send({
+          error: "Bio must be 500 characters or less",
+        });
+      }
+
+      // Validate fullName if provided
+      if (fullName !== undefined) {
+        if (!fullName.trim() || fullName.length < 1) {
+          return reply.status(400).send({
+            error: "Full name cannot be empty",
+          });
+        }
+        if (fullName.length > 100) {
+          return reply.status(400).send({
+            error: "Full name must be 100 characters or less",
+          });
+        }
+      }
+
+      const user = await userService.updateProfile(userId, {
+        bio,
+        profilePictureUrl,
+        fullName,
+        instagramUsername,
+      });
+
+      return reply.send({ user });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error",
+      });
+    }
+  }
 }
