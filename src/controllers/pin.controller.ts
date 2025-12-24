@@ -21,8 +21,16 @@ export class PinController {
   ) => {
     try {
       const userId = request.user.id;
-      const { lat, lng, content, moodScale, feeling, isPublic, eventId, mediaUrls } =
-        request.body;
+      const {
+        lat,
+        lng,
+        content,
+        moodScale,
+        feeling,
+        isPublic,
+        eventId,
+        mediaUrls,
+      } = request.body;
 
       // Validate required fields
       if (lat === undefined || lng === undefined || !content) {
@@ -91,7 +99,7 @@ export class PinController {
         error: "Internal server error",
       });
     }
-  }
+  };
 
   getPins = async (
     request: FastifyRequest<{
@@ -124,7 +132,8 @@ export class PinController {
         lat: lat ? parseFloat(lat) : undefined,
         lng: lng ? parseFloat(lng) : undefined,
         radius: radius ? parseFloat(radius) : undefined,
-        isPublic: isPublic === "true" ? true : isPublic === "false" ? false : undefined,
+        isPublic:
+          isPublic === "true" ? true : isPublic === "false" ? false : undefined,
         limit: limit ? parseInt(limit) : undefined,
         offset: offset ? parseInt(offset) : undefined,
         requestingUserId: userId,
@@ -143,7 +152,7 @@ export class PinController {
         error: "Internal server error",
       });
     }
-  }
+  };
 
   updatePin = async (
     request: FastifyRequest<{
@@ -189,7 +198,7 @@ export class PinController {
         error: "Internal server error",
       });
     }
-  }
+  };
 
   deletePin = async (
     request: FastifyRequest<{
@@ -350,7 +359,9 @@ export class PinController {
         });
       }
 
-      return reply.status(200).send({ message: "Comment deleted successfully" });
+      return reply
+        .status(200)
+        .send({ message: "Comment deleted successfully" });
     } catch (error: any) {
       request.log.error(error);
       return reply.status(500).send({
@@ -388,4 +399,3 @@ export class PinController {
     }
   };
 }
-

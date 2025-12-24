@@ -244,11 +244,51 @@ export class UserController {
       const { userId } = request.params;
       const limit = request.query.limit ? parseInt(request.query.limit) : 50;
       const offset = request.query.offset ? parseInt(request.query.offset) : 0;
+      const currentUserId = request.user?.id;
 
       const result = await followService.getFollowers(userId, {
         limit,
         offset,
       });
+
+      // Add follow status for each follower if authenticated
+      if (currentUserId) {
+        const followersWithFollowStatus = await Promise.all(
+          result.followers.map(async (follower) => {
+            if (follower.id === currentUserId) {
+              return {
+                ...follower,
+                isFollowing: false,
+                followRequestStatus: null,
+              };
+            }
+
+            const isFollowing = await followService.isFollowing(
+              currentUserId,
+              follower.id
+            );
+
+            let followRequestStatus = null;
+            if (!isFollowing) {
+              followRequestStatus = await followService.getFollowRequestStatus(
+                currentUserId,
+                follower.id
+              );
+            }
+
+            return {
+              ...follower,
+              isFollowing,
+              followRequestStatus,
+            };
+          })
+        );
+
+        return reply.send({
+          followers: followersWithFollowStatus,
+          total: result.total,
+        });
+      }
 
       return reply.send(result);
     } catch (error: any) {
@@ -271,11 +311,51 @@ export class UserController {
       const { userId } = request.params;
       const limit = request.query.limit ? parseInt(request.query.limit) : 50;
       const offset = request.query.offset ? parseInt(request.query.offset) : 0;
+      const currentUserId = request.user?.id;
 
       const result = await followService.getFollowing(userId, {
         limit,
         offset,
       });
+
+      // Add follow status for each following user if authenticated
+      if (currentUserId) {
+        const followingWithFollowStatus = await Promise.all(
+          result.following.map(async (followingUser) => {
+            if (followingUser.id === currentUserId) {
+              return {
+                ...followingUser,
+                isFollowing: false,
+                followRequestStatus: null,
+              };
+            }
+
+            const isFollowing = await followService.isFollowing(
+              currentUserId,
+              followingUser.id
+            );
+
+            let followRequestStatus = null;
+            if (!isFollowing) {
+              followRequestStatus = await followService.getFollowRequestStatus(
+                currentUserId,
+                followingUser.id
+              );
+            }
+
+            return {
+              ...followingUser,
+              isFollowing,
+              followRequestStatus,
+            };
+          })
+        );
+
+        return reply.send({
+          following: followingWithFollowStatus,
+          total: result.total,
+        });
+      }
 
       return reply.send(result);
     } catch (error: any) {

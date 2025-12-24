@@ -18,7 +18,7 @@ export async function pinRoutes(app: FastifyInstance) {
       mediaUrls?: { url: string; type: "IMAGE" | "VIDEO" }[];
     };
   }>("/", { onRequest: [authenticate] }, pinController.createPin);
-  
+
   app.get<{
     Querystring: {
       authorId?: string;
@@ -30,11 +30,11 @@ export async function pinRoutes(app: FastifyInstance) {
       offset?: string;
     };
   }>("/", { onRequest: [optionalAuthenticate] }, pinController.getPins); // Can be accessed without auth for public pins, but uses auth if available
-  
+
   app.get<{
     Params: { id: string };
   }>("/:id", pinController.getPin);
-  
+
   app.put<{
     Params: { id: string };
     Body: {
@@ -44,7 +44,7 @@ export async function pinRoutes(app: FastifyInstance) {
       isPublic?: boolean;
     };
   }>("/:id", { onRequest: [authenticate] }, pinController.updatePin);
-  
+
   app.delete<{
     Params: { id: string };
   }>("/:id", { onRequest: [authenticate] }, pinController.deletePin);
@@ -53,11 +53,11 @@ export async function pinRoutes(app: FastifyInstance) {
   app.post<{
     Params: { id: string };
   }>("/:id/like", { onRequest: [authenticate] }, pinController.likePin);
-  
+
   app.delete<{
     Params: { id: string };
   }>("/:id/like", { onRequest: [authenticate] }, pinController.unlikePin);
-  
+
   app.get<{
     Params: { id: string };
     Querystring: {
@@ -73,7 +73,7 @@ export async function pinRoutes(app: FastifyInstance) {
       content: string;
     };
   }>("/:id/comments", { onRequest: [authenticate] }, pinController.addComment);
-  
+
   app.get<{
     Params: { id: string };
     Querystring: {
@@ -81,9 +81,12 @@ export async function pinRoutes(app: FastifyInstance) {
       offset?: string;
     };
   }>("/:id/comments", pinController.getComments);
-  
+
   app.delete<{
     Params: { id: string; commentId: string };
-  }>("/:id/comments/:commentId", { onRequest: [authenticate] }, pinController.deleteComment);
+  }>(
+    "/:id/comments/:commentId",
+    { onRequest: [authenticate] },
+    pinController.deleteComment
+  );
 }
-

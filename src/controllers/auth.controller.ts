@@ -22,7 +22,8 @@ export class AuthController {
       // Validate required fields
       if (!email || !username || !fullName || !password) {
         return reply.status(400).send({
-          error: "All fields are required (email, username, fullName, password)",
+          error:
+            "All fields are required (email, username, fullName, password)",
         });
       }
 
@@ -38,7 +39,8 @@ export class AuthController {
       const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
       if (!usernameRegex.test(username)) {
         return reply.status(400).send({
-          error: "Username must be 3-20 characters long and contain only letters, numbers, and underscores",
+          error:
+            "Username must be 3-20 characters long and contain only letters, numbers, and underscores",
         });
       }
 
@@ -81,24 +83,24 @@ export class AuthController {
 
       // Validate input
       if (!email || !password) {
-        return reply.status(400).send({ 
-          error: "Email and password are required" 
+        return reply.status(400).send({
+          error: "Email and password are required",
         });
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        return reply.status(400).send({ 
-          error: "Invalid email format" 
+        return reply.status(400).send({
+          error: "Invalid email format",
         });
       }
 
       const user = await userService.validateUser(email, password);
 
       if (!user) {
-        return reply.status(401).send({ 
-          error: "Invalid credentials" 
+        return reply.status(401).send({
+          error: "Invalid credentials",
         });
       }
 
@@ -108,14 +110,14 @@ export class AuthController {
         username: user.username,
       });
 
-      return reply.status(200).send({ 
-        user, 
-        token 
+      return reply.status(200).send({
+        user,
+        token,
       });
     } catch (error: any) {
       request.log.error(error);
-      return reply.status(500).send({ 
-        error: "Internal server error" 
+      return reply.status(500).send({
+        error: "Internal server error",
       });
     }
   }
