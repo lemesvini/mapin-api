@@ -7,6 +7,13 @@ const authController = new AuthController();
 export async function authRoutes(app: FastifyInstance) {
   app.post("/register", authController.register);
   app.post("/login", authController.login);
-  app.get("/me", { onRequest: [authenticate] }, authController.me);
-  app.patch("/me", { onRequest: [authenticate] }, authController.updateProfile);
+  app.get("/me", {
+    onRequest: [authenticate],
+    handler: async (request, reply) => authController.me(request as any, reply),
+  });
+  app.patch("/me", {
+    onRequest: [authenticate],
+    handler: async (request, reply) =>
+      authController.updateProfile(request as any, reply),
+  });
 }
